@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Remarkable Flashcards</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,300..800;1,300..800&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Tilt+Neon&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="orb" onClick="window.location.reload();"></div>
+        <h1>hey, what do you want do?</h1>
+      </div>
+
+      <div class="pill-row">
+        <button
+          class="pill pill-primary active"
+          id="importButton"
+          aria-label="Import"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="feather feather-upload"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" /></svg
+          >import
+        </button>
+        or
+        <button class="pill" id="templateButton" aria-label="Template">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="feather feather-file-text"
+          >
+            <path
+              d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+            />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10 9 9 9 8 9" /></svg
+          >get template
+        </button>
+      </div>
+
+      <!-- Instruction - Import section -->
+      <div class="instructions import" id="importSection">
+        <p>
+          Export your flashcard deck from any app like Anki or Quizlet as a txt
+          or tsv file, with each card on a new line and the front/back seperated
+          by a tab. Then, easily convert it to a PDF, perfect for your
+          reMarkable tablet.
+        </p>
+        <hr />
+        <hr class="blank" />
+        <p>
+          upload the
+          <label for="fileInput" class="file-input">
+            <span class="inline-pill file-input">Document</span>
+          </label>
+          <span class="status file-name-display">(no file selected)</span>
+          <input
+            type="file"
+            id="fileInput"
+            accept=".txt,.csv,.tsv"
+            class="hidden"
+          />
+        </p>
+
+        <p id="fileError" class="error"></p>
+        <p>
+          you can add the
+          <input
+            class="inline-pill text-input"
+            id="templateDeckTitle"
+            placeholder="File name"
+            data-helper-id="text-width-helper-import"
+          />
+          if needed
+        </p>
+        <!-- Helper span for measuring text width -->
+        <span
+          id="text-width-helper-import"
+          class="text-width-helper-span"
+        ></span>
+
+        <p>you can also specify if you want to:</p>
+        <p>
+          <label class="cursor-pointer">
+            <input type="checkbox" id="randomizeOrder" class="hidden" />
+            <span class="inline-pill checkbox">Shuffle cards</span>
+          </label>
+          and/or
+          <label class="cursor-pointer">
+            <input type="checkbox" id="flipCards" class="hidden" />
+            <span class="inline-pill checkbox">Show back first</span>
+          </label>
+        </p>
+        <p>
+          you can also
+          <label class="cursor-pointer">
+            <input type="checkbox" id="includeTOC" class="hidden" />
+            <span class="inline-pill checkbox">Add a TOC</span>
+          </label>
+        </p>
+
+        <hr class="blank" />
+        <!-- Card Preview Section -->
+        <div class="cards-container">
+          <p>
+            here are the first 3 cards from your deck;<br />you can delete any
+            unwanted entries (like extra data at the start of the file) before
+            converting
+          </p>
+          <span class="status">
+            (there are currently <span id="cardCount">0</span> in your deck)
+          </span>
+          <div id="cardPreview" class="preview-container mt-2">
+            <p class="status file-status">Upload a file to see the preview.</p>
+          </div>
+        </div>
+
+        <div id="loadingIndicator" class="mt-2 hidden">
+          <div
+            class="inline-block animate-spin rounded-full h-4 w-4 border-t-2 border-gray-900 mr-2"
+          ></div>
+          <span id="progressIndicator" class="satus"></span>
+        </div>
+        <p id="pdfError" class="error"></p>
+        <hr class="blank" />
+
+        <p class="final-line">
+          when you're ready go ahead
+          <span class="download-container"
+            >and
+            <button class="download" id="generatePdfBtnImport">
+              <!-- Unique ID -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="feather feather-download"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" /></svg
+              >download
+            </button></span
+          >
+        </p>
+      </div>
+
+      <!-- Template section -->
+      <div
+        class="instructions template"
+        id="templateSection"
+        style="display: none"
+      >
+        <p>
+          Generate an empty PDF template for your flashcards, ready for you to
+          fill in by hand. With clickable links, it's perfect for your
+          reMarkable tablet.
+        </p>
+        <hr />
+        <hr class="blank" />
+        <p>
+          Enter the
+          <input
+            type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
+            min="1"
+            max="500"
+            placeholder="Number (1-500)"
+            class="inline-pill text-input"
+            id="templateCardCount"
+            data-helper-id="text-width-helper-template-number"
+          />
+          <!-- Helper span for measuring text width -->
+          <span
+            id="text-width-helper-template-number"
+            class="text-width-helper-span"
+          ></span>
+          of flashcards you would like to create
+        </p>
+        <p>
+          you can also add the
+          <input
+            class="inline-pill text-input"
+            id="importDeckTitle"
+            placeholder="File name"
+            data-helper-id="text-width-helper-template"
+          />
+          if needed
+        </p>
+        <!-- Helper span for measuring text width -->
+        <span
+          id="text-width-helper-template"
+          class="text-width-helper-span"
+        ></span>
+
+        <hr class="blank" />
+        <p class="final-line">
+          when you're ready go ahead
+          <span class="download-container"
+            >and
+            <button class="download" id="generatePdfBtnTemplate">
+              <!-- Unique ID -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="feather feather-download"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" /></svg
+              >download
+            </button></span
+          >
+        </p>
+      </div>
+      <hr class="blank" />
+      <footer>
+        <hr />
+
+        <p>
+          Made with love by <a href="https://pierrelouis.net">Pierre-Louis</a>.
+        </p>
+        <p>
+          Everything runs entirely in your browser, nothing is uploaded
+          anywhere. This is just a fun side project: no image support yet, bugs
+          and occasional LaTeX errors may happen.
+        </p>
+      </footer>
+    </div>
+
+    <div id="previewContainer" style="display: none"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Make sure your script file path is correct -->
+    <script src="script.js" defer></script>
+    <script src="logic.js" defer></script>
+  </body>
+</html>
