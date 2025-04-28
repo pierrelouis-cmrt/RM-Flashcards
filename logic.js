@@ -504,7 +504,7 @@ async function updatePreview() {
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-card-btn";
     deleteBtn.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" 
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="3 6 5 6 21 6"></polyline>
         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -1371,20 +1371,28 @@ async function generateTemplatePdf() {
   doc.setFont("Helvetica", "normal");
 
   let linksToAdd = [];
-  const totalPages = templateCount * 2;
+  const titlePageCount = 1; // Add a title page
+  const pageOffset = titlePageCount; // Offset for card pages
+  const totalPages = titlePageCount + templateCount * 2; // Total pages including title
 
   try {
+    // --- Add Title Page ---
+    addTitlePage(doc, templateTitle);
+
     // --- Card Page Generation Loop ---
     for (let i = 0; i < templateCount; i++) {
       const cardIndex = i + 1; // 1-based index for display
-      const frontPageNum = i * 2 + 1;
-      const backPageNum = i * 2 + 2;
+      // Calculate page numbers with offset
+      const frontPageNum = pageOffset + i * 2 + 1;
+      const backPageNum = pageOffset + i * 2 + 2;
       const cardIdentifier = `Card ${cardIndex}`;
 
       // --- Render Front Page ---
-      if (i > 0) doc.addPage();
+      doc.addPage(); // Add page for the front card
       doc.setPage(frontPageNum);
       addPageHeader(doc, templateTitle, cardIndex, templateCount);
+      // Add placeholder content area if desired (optional)
+      // doc.rect(MARGIN_PT, CONTENT_AREA_Y_START, CONTENT_WIDTH_PT, CONTENT_HEIGHT_PT, 'S'); // Example outline
 
       addPageFooter(
         doc,
@@ -1394,17 +1402,19 @@ async function generateTemplatePdf() {
         frontPageNum,
         true, // isFront
         frontPageNum,
-        totalPages,
+        totalPages, // Pass updated totalPages
         cardIndex,
         templateCount,
-        0, // pageOffset
+        pageOffset, // Pass the offset
         linksToAdd
       );
 
       // --- Render Back Page ---
-      doc.addPage();
+      doc.addPage(); // Add page for the back card
       doc.setPage(backPageNum);
       addPageHeader(doc, templateTitle, cardIndex, templateCount);
+      // Add placeholder content area if desired (optional)
+      // doc.rect(MARGIN_PT, CONTENT_AREA_Y_START, CONTENT_WIDTH_PT, CONTENT_HEIGHT_PT, 'S'); // Example outline
 
       addPageFooter(
         doc,
@@ -1414,10 +1424,10 @@ async function generateTemplatePdf() {
         frontPageNum,
         false, // isFront
         backPageNum,
-        totalPages,
+        totalPages, // Pass updated totalPages
         cardIndex,
         templateCount,
-        0, // pageOffset
+        pageOffset, // Pass the offset
         linksToAdd
       );
     }
@@ -1438,6 +1448,10 @@ async function generateTemplatePdf() {
             e
           );
         }
+      } else {
+        console.warn(
+          `Skipping link on template page ${linkInfo.pageNum} to invalid target ${linkInfo.targetPage} (Total: ${totalPages})`
+        );
       }
     });
 
